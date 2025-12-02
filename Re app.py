@@ -1,4 +1,4 @@
-# Filename: royal_enfield_calculator_custom.py
+# Filename: royal_enfield_calculator_side.py
 import streamlit as st
 import pandas as pd
 
@@ -14,31 +14,29 @@ st.set_page_config(
 # -------------------
 # Light theme styling
 # -------------------
-st.markdown(
-    """
-    <style>
-    .main {
-        background-color: #FFFFFF;
-        color: #1A1A1A;
-    }
-    h1 {
-        color: #D32F2F;
-    }
-    h3 {
-        color: #1976D2;
-    }
-    .highlight {
-        background-color: #FFF3E0;
-        padding: 15px;
-        border-radius: 10px;
-        font-size: 22px;
-        font-weight: bold;
-        text-align: center;
-        color: #D32F2F;
-    }
-    </style>
-    """, unsafe_allow_html=True
-)
+st.markdown("""
+<style>
+.main {
+    background-color: #FFFFFF;
+    color: #1A1A1A;
+}
+h1 {
+    color: #D32F2F;
+}
+h3 {
+    color: #1976D2;
+}
+.highlight {
+    background-color: #FFF3E0;
+    padding: 15px;
+    border-radius: 10px;
+    font-size: 22px;
+    font-weight: bold;
+    text-align: center;
+    color: #D32F2F;
+}
+</style>
+""", unsafe_allow_html=True)
 
 # -------------------
 # Title
@@ -47,15 +45,42 @@ st.markdown("<h1 style='text-align: center;'>Royal Enfield Price & VAT Calculato
 st.markdown("<hr>")
 
 # -------------------
-# Input section
+# Columns: input box (left) and common prices (right)
 # -------------------
-st.subheader("Enter Selling Prices")
-sp_input = st.text_area(
-    "Type one or multiple Selling Prices (comma-separated):",
-    value="371500, 417500, 432500",  # pre-filled with common prices as suggestion
-    help="You can type any prices separated by commas, e.g., 371500, 417500, 450000"
-)
+col1, col2 = st.columns([3, 1])
 
+with col1:
+    st.subheader("Enter Selling Prices")
+    # Initialize session state for dynamic updates
+    if "sp_input" not in st.session_state:
+        st.session_state.sp_input = ""
+    sp_input = st.text_area(
+        "Type prices (comma-separated):",
+        value=st.session_state.sp_input,
+        help="You can type any prices, e.g., 371500, 417500, 450000"
+    )
+
+with col2:
+    st.subheader("Common Prices")
+    common_sps = [371500, 417500, 432500, 437500, 447700, 483000, 508000]
+    selected_common = st.multiselect(
+        "Choose common prices to add:",
+        options=common_sps,
+        default=[]
+    )
+    
+    # Append selected common prices to input box dynamically
+    if selected_common:
+        existing_prices = [x.strip() for x in st.session_state.sp_input.split(",") if x.strip() != ""]
+        for price in selected_common:
+            existing_prices.append(str(price))
+        st.session_state.sp_input = ",".join(existing_prices)
+        # Clear the multiselect to allow multiple selections again
+        st.experimental_rerun()
+
+# -------------------
+# Profit %
+# -------------------
 profit_percent = st.number_input(
     "Profit %:", value=4.5, min_value=0.0, step=0.1, help="Set your profit percentage"
 )
@@ -65,8 +90,7 @@ profit_percent = st.number_input(
 # -------------------
 if st.button("Calculate"):
     try:
-        # Parse SP input
-        selling_prices = [float(x.strip()) for x in sp_input.split(",") if x.strip() != ""]
+        selling_prices = [float(x.strip()) for x in st.session_state.sp_input.split(",") if x.strip() != ""]
         if not selling_prices:
             st.warning("Please enter at least one Selling Price.")
         else:
