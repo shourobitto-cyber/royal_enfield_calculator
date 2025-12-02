@@ -4,7 +4,7 @@ import pandas as pd
 # App config
 st.set_page_config(page_title="Royal Enfield Calculator", page_icon="🏍️", layout="wide")
 
-# Style
+# Styling
 st.markdown("""
 <style>
 h1 { color: #D32F2F; }
@@ -54,4 +54,18 @@ if st.button("Calculate"):
                 nsp = sp * 100 / 115
                 selling_vat = nsp * 0.15
                 nbp = bp * 100 / 115
-                buying
+                buying_vat = nbp * 0.15
+                profit = sp - bp
+                net_profit = nsp - nbp
+                vat_diff = selling_vat - buying_vat
+                total_vat_diff += vat_diff
+                data.append([sp, nsp, selling_vat, bp, nbp, buying_vat, profit, net_profit, vat_diff])
+
+            columns = ["SP","NSP","Selling VAT","BP","NBP","Buying VAT","Profit","Net Profit","VAT Difference"]
+            df = pd.DataFrame(data, columns=columns).round(2)
+
+            st.success(f"Calculated results for {len(selling_prices)} SP(s)")
+            st.dataframe(df, use_container_width=True)
+            st.markdown(f"<div class='highlight'>Total VAT Difference: {total_vat_diff:,.2f} BDT</div>", unsafe_allow_html=True)
+    except Exception as e:
+        st.error(f"Error: {e}")
